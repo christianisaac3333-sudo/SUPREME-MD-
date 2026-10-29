@@ -1,0 +1,21 @@
+{
+  "name": "supreme-md-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "check": "node --check index.js",
+    "cloud": "node cloud-server.js"
+  },
+  "dependencies": {
+    "@img/sharp-wasm32": "^0.35.5",
+    "@pasqua-baileys/baileys": "^2.8.10",
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "pino": "^10.4.0",
+    "sharp": "^0.35.5",
+    "telegraf": "^4.16.3"
+  }
+}
