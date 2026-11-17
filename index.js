@@ -16,7 +16,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
-const PREFIX = process.env.PREFIX || '.';
+const PREFIX = process.env.BOT_PREFIX || '.';
 const BOT_NAME = process.env.BOT_NAME || 'SUPREME MD';
 const OWNER = (process.env.OWNER_NUMBER || '').replace(/\D/g, '');
 const AUTH_DIR = './auth_info';
@@ -104,47 +104,88 @@ function getTarget(m) {
   return context?.mentionedJid?.[0] || context?.participant || null;
 }
 function menuText() {
-  return `👑 *${BOT_NAME} — COMMAND CENTRE*
+  return `╭━━〔 ♤ SUPREME MD ♤ 〕━━╮
+┃  CHRIS REMAINS SUPREME
+╰━━━━━━━━━━━━━━━━━━╯
 
-*GENERAL*
-${PREFIX}menu • ${PREFIX}help • ${PREFIX}alive • ${PREFIX}ping
-${PREFIX}uptime • ${PREFIX}info • ${PREFIX}id • ${PREFIX}owner
-${PREFIX}rules • ${PREFIX}time • ${PREFIX}calc <expression>
+『 GENERAL 』
+${PREFIX}menu
+${PREFIX}help
+${PREFIX}alive
+${PREFIX}ping
+${PREFIX}uptime
+${PREFIX}info
+${PREFIX}id
+${PREFIX}jid
+${PREFIX}owner
+${PREFIX}rules
+${PREFIX}time
+${PREFIX}calc <expression>
 
-*GROUP / MODERATION*
-${PREFIX}groupinfo • ${PREFIX}admins • ${PREFIX}tagall [text]
-${PREFIX}hidetag [text] • ${PREFIX}grouplink • ${PREFIX}revoke
-${PREFIX}warn @user • ${PREFIX}warnings @user • ${PREFIX}kick @user
-${PREFIX}promote @user • ${PREFIX}demote @user
-${PREFIX}antilink on|off • ${PREFIX}antispam on|off
-${PREFIX}mute @user • ${PREFIX}unmute @user
-${PREFIX}welcome on|off • ${PREFIX}goodbye on|off
+『 AI FEATURES 』
+${PREFIX}ask <question>
+${PREFIX}translate <language> | <text>
+${PREFIX}summarize <text>
+${PREFIX}weather <city>
 
-*MEDIA*
-${PREFIX}sticker • ${PREFIX}toimg • ${PREFIX}tomp3
-${PREFIX}tourl (needs upload provider)
+『 MEDIA 』
+${PREFIX}sticker
+${PREFIX}toimg
+${PREFIX}tomp3
+${PREFIX}tourl
+${PREFIX}vv
 
-*AI / UTILITIES*
-${PREFIX}ask <question> • ${PREFIX}translate <language> | <text>
-${PREFIX}summarize <text> • ${PREFIX}weather <city>
+『 SEARCH & APPS 』
+${PREFIX}pinterest <query>
+${PREFIX}google <query>
+${PREFIX}youtube <query>
+${PREFIX}tiktok <query>
+${PREFIX}instagram <query>
+${PREFIX}facebook <query>
+${PREFIX}spotify <query>
+${PREFIX}github <query>
 
-*SEARCH / APPS*
-${PREFIX}pinterest <query> • ${PREFIX}google <query>
-${PREFIX}youtube <query> • ${PREFIX}tiktok <query>
-${PREFIX}instagram <query> • ${PREFIX}facebook <query>
-${PREFIX}spotify <query> • ${PREFIX}github <query>
+『 GROUP MANAGEMENT 』
+${PREFIX}groupinfo
+${PREFIX}admins
+${PREFIX}tagall [text]
+${PREFIX}hidetag [text]
+${PREFIX}grouplink
+${PREFIX}revoke
+${PREFIX}warn @user
+${PREFIX}warnings @user
+${PREFIX}kick @user
+${PREFIX}promote @user
+${PREFIX}demote @user
+${PREFIX}antilink on|off
+${PREFIX}antispam on|off
+${PREFIX}mute @user
+${PREFIX}unmute @user
+${PREFIX}welcome on|off
+${PREFIX}goodbye on|off
 
-*GAMES*
-${PREFIX}riddle • ${PREFIX}answer <answer> • ${PREFIX}guess
-${PREFIX}guess <1-10> • ${PREFIX}flip • ${PREFIX}dice
-${PREFIX}roll [sides] • ${PREFIX}joke • ${PREFIX}fact
+『 GAMES & FUN 』
+${PREFIX}riddle
+${PREFIX}answer <answer>
+${PREFIX}guess
+${PREFIX}guess <1-10>
+${PREFIX}flip
+${PREFIX}dice
+${PREFIX}roll [sides]
+${PREFIX}joke
+${PREFIX}fact
 
-*OWNER*
-${PREFIX}settings • ${PREFIX}mode public|private
-${PREFIX}sudo add|remove <number> • ${PREFIX}broadcast <text>
-${PREFIX}restart (process manager required)
+『 OWNER COMMANDS 』
+${PREFIX}settings
+${PREFIX}mode public|private
+${PREFIX}sudo add|remove <number>
+${PREFIX}broadcast <text>
+${PREFIX}restart
 
-*Note:* Search commands open official search pages. Media downloads require a trusted, configured provider.`;
+╭━━━━━━━━━━━━━━━━━━╮
+┃       ♤ SUPERIOR ♤
+┃ POWERED BY ♤ SUPREME DEV ♤
+╰━━━━━━━━━━━━━━━━━━╯`;
 }
 function safeCalc(expression) {
   const tokens = expression.match(/\d+(?:\.\d+)?|[()+\-*/%]/g) || [];
@@ -587,13 +628,13 @@ async function connect() {
       for (const participant of event.participants) {
         if (event.action === 'add' && cfg.welcome !== false) {
           await sock.sendMessage(event.id, {
-            text: `👑 Welcome @${senderNumber(participant)} to *${meta.subject}*!\nPlease read the rules and respect everyone.`,
-            mentions: [participant]
+            text: `👑 Welcome @${senderNumber(participant.id || participant)} to *${meta.subject}*!\nPlease read the rules and respect everyone.`,
+            mentions: [participant.id || participant]
           });
         } else if (event.action === 'remove' && cfg.goodbye !== false) {
           await sock.sendMessage(event.id, {
-            text: `👋 Goodbye @${senderNumber(participant)}. Take care!`,
-            mentions: [participant]
+            text: `👋 Goodbye @${senderNumber(participant.id || participant)}. Take care!`,
+            mentions: [participant.id || participant]
           });
         }
       }

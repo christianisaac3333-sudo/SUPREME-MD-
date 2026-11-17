@@ -9,3 +9,10 @@ tmp/
 *.backup
 *.backup-*
 *.before-*
+
+# Protect all local WhatsApp authentication backups
+auth_info.*/
+pair.txt
+
+# Keep local pre-edit source backups off GitHub
+*.pre-*

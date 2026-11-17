@@ -8,7 +8,7 @@ import {
   writeFile,
   rename
 } from 'node:fs/promises';
-import { makeWASocket, Browsers, DisconnectReason, fetchLatestWaWebVersion, useMultiFileAuthState } from '@pasqua-baileys/baileys';
+import { makeWASocket, Browsers, DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import { Telegraf } from 'telegraf';
 
@@ -180,6 +180,10 @@ console.log('[WA CONNECTION UPDATE]', {
       entry.pairingRequested = true;
 
       try {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        if (entry.stopped || sessions.get(id) !== entry) return;
+
         const number = String(phoneNumber).replace(/\D/g, '');
         if (!number) throw new Error('Phone number is empty or invalid');
 
@@ -264,18 +268,266 @@ console.log('[WA CONNECTION UPDATE]', {
   return entry;
 }
 
-bot.start(async ctx => {
-  await ctx.reply(
-    '👑 Welcome to SUPREME MD CLOUD.\n\n' +
-    '/register - Create an account\n' +
-    '/me - View your account\n' +
-    '/pair 234XXXXXXXXX - Request a pairing code\n' +
-    '/connect - Reconnect your saved session\n' +
-    '/status - Check WhatsApp status\n' +
-    '/disconnect - Stop your cloud connection\n' +
-    '/help - Show commands'
-  );
+
+
+const WA_PREFIX = process.env.BOT_PREFIX || '.';
+
+const MENU_PAGES = {
+  home: {
+    text:
+      '♤ SUPREME MD CLOUD ♤\n' +
+      '━━━━━━━━━━━━━━━━━━\n\n' +
+      'WELCOME TO THE SUPREME COMMAND CENTRE\n\n' +
+      'Explore the command categories below.\n' +
+      'WhatsApp commands run through your linked WhatsApp bot.\n\n' +
+      '♤ CHRIS REMAINS SUPREME ♤',
+    buttons: [
+      ['menu_general', '♤ GENERAL'],
+      ['menu_ai', '♤ SUPREME AI'],
+      ['menu_media', '♤ MEDIA'],
+      ['menu_search', '♤ SEARCH & APPS'],
+      ['menu_group', '♤ GROUP MANAGEMENT'],
+      ['menu_games', '♤ GAMES & FUN'],
+      ['menu_owner', '♤ OWNER TOOLS'],
+      ['menu_account', '♤ ACCOUNT'],
+      ['menu_whatsapp', '♤ WHATSAPP CONTROL']
+    ]
+  },
+
+  general: {
+    text:
+      '♤ GENERAL COMMANDS ♤\n━━━━━━━━━━━━━━━━━━\n\n' +
+      WA_PREFIX + 'menu — Open command menu\n' +
+      WA_PREFIX + 'help — Show help\n' +
+      WA_PREFIX + 'alive — Check if bot is online\n' +
+      WA_PREFIX + 'ping — Check response\n' +
+      WA_PREFIX + 'uptime — Bot running time\n' +
+      WA_PREFIX + 'info — Bot information\n' +
+      WA_PREFIX + 'id — Chat and sender ID\n' +
+      WA_PREFIX + 'jid — Chat identifier\n' +
+      WA_PREFIX + 'owner — Owner contact\n' +
+      WA_PREFIX + 'rules — Group rules\n' +
+      WA_PREFIX + 'time — Current time\n' +
+      WA_PREFIX + 'calc 12+8 — Calculator',
+    buttons: []
+  },
+
+  ai: {
+    text:
+      '♤ SUPREME AI ♤\n━━━━━━━━━━━━━━━━━━\n\n' +
+      WA_PREFIX + 'ask <question> — Ask AI anything\n\n' +
+      WA_PREFIX + 'translate French | Hello — Translate text\n\n' +
+      WA_PREFIX + 'summarize <text> — Summarize text\n\n' +
+      WA_PREFIX + 'weather Port Harcourt — Weather lookup\n\n' +
+      'AI availability depends on your API configuration.',
+    buttons: []
+  },
+
+  media: {
+    text:
+      '♤ MEDIA CENTRE ♤\n━━━━━━━━━━━━━━━━━━\n\n' +
+      WA_PREFIX + 'sticker — Turn a replied image into a sticker\n\n' +
+      WA_PREFIX + 'toimg — Convert a replied sticker to an image\n\n' +
+      WA_PREFIX + 'tomp3 — Convert replied audio/video to MP3\n\n' +
+      WA_PREFIX + 'tourl — Upload feature (provider not configured)\n\n' +
+      WA_PREFIX + 'vv — View-once privacy information\n\n' +
+      'Reply to supported media before using conversion commands.',
+    buttons: []
+  },
+
+  search: {
+    text:
+      '♤ SEARCH & APPS ♤\n━━━━━━━━━━━━━━━━━━\n\n' +
+      WA_PREFIX + 'google <query>\n' +
+      WA_PREFIX + 'youtube <query>\n' +
+      WA_PREFIX + 'pinterest <query>\n' +
+      WA_PREFIX + 'tiktok <query>\n' +
+      WA_PREFIX + 'instagram <query>\n' +
+      WA_PREFIX + 'facebook <query>\n' +
+      WA_PREFIX + 'spotify <query>\n' +
+      WA_PREFIX + 'github <query>\n\n' +
+      'Example: ' + WA_PREFIX + 'youtube science projects',
+    buttons: []
+  },
+
+  group: {
+    text:
+      '♤ GROUP MANAGEMENT ♤\n━━━━━━━━━━━━━━━━━━\n\n' +
+      WA_PREFIX + 'groupinfo — Group information\n' +
+      WA_PREFIX + 'admins — View administrators\n' +
+      WA_PREFIX + 'tagall [text] — Mention members\n' +
+      WA_PREFIX + 'hidetag [text] — Hidden member mention\n' +
+      WA_PREFIX + 'grouplink — Get invite link\n' +
+      WA_PREFIX + 'revoke — Reset invite link\n' +
+      WA_PREFIX + 'warn @user — Add warning\n' +
+      WA_PREFIX + 'warnings @user — Check warnings\n' +
+      WA_PREFIX + 'kick @user — Remove member\n' +
+      WA_PREFIX + 'promote @user — Promote member\n' +
+      WA_PREFIX + 'demote @user — Demote member\n' +
+      WA_PREFIX + 'mute @user — Mute member\n' +
+      WA_PREFIX + 'unmute @user — Unmute member\n' +
+      WA_PREFIX + 'antilink on/off\n' +
+      WA_PREFIX + 'antispam on/off\n' +
+      WA_PREFIX + 'welcome on/off\n' +
+      WA_PREFIX + 'goodbye on/off\n\n' +
+      'Group commands require the appropriate admin permissions.',
+    buttons: []
+  },
+
+  games: {
+    text:
+      '♤ GAMES & FUN ♤\n━━━━━━━━━━━━━━━━━━\n\n' +
+      WA_PREFIX + 'riddle — Start a riddle\n' +
+      WA_PREFIX + 'answer <answer> — Answer a riddle\n' +
+      WA_PREFIX + 'guess — Start number guessing\n' +
+      WA_PREFIX + 'guess <1-10> — Make a guess\n' +
+      WA_PREFIX + 'flip — Coin flip\n' +
+      WA_PREFIX + 'dice — Roll a dice\n' +
+      WA_PREFIX + 'roll 20 — Roll custom dice\n' +
+      WA_PREFIX + 'joke — Random joke\n' +
+      WA_PREFIX + 'fact — Random fact',
+    buttons: []
+  },
+
+  owner: {
+    text:
+      '♤ OWNER CONTROL ♤\n━━━━━━━━━━━━━━━━━━\n\n' +
+      WA_PREFIX + 'settings — View bot settings\n' +
+      WA_PREFIX + 'mode public/private — Set bot mode\n' +
+      WA_PREFIX + 'sudo add/remove <number> — Manage sudo\n' +
+      WA_PREFIX + 'broadcast <text> — Current-chat announcement\n' +
+      WA_PREFIX + 'restart — Restart guidance\n\n' +
+      'These commands are restricted to the configured owner.',
+    buttons: []
+  },
+
+  account: {
+    text:
+      '♤ ACCOUNT CENTRE ♤\n━━━━━━━━━━━━━━━━━━\n\n' +
+      '/register — Create your cloud account\n' +
+      '/me — View your account details\n\n' +
+      'Your account information is private.',
+    buttons: [
+      ['menu_register', 'REGISTER'],
+      ['menu_me', 'MY ACCOUNT']
+    ]
+  },
+
+  whatsapp: {
+    text:
+      '♤ WHATSAPP CONTROL ♤\n━━━━━━━━━━━━━━━━━━\n\n' +
+      '/pair 234XXXXXXXXX — Link WhatsApp\n' +
+      '/connect — Reconnect saved session\n' +
+      '/status — Check connection status\n' +
+      '/disconnect — Stop cloud connection\n\n' +
+      'Keep your pairing code private.',
+    buttons: [
+      ['menu_pair', 'PAIR WHATSAPP'],
+      ['menu_status', 'CONNECTION STATUS'],
+      ['menu_connect', 'RECONNECT'],
+      ['menu_disconnect', 'DISCONNECT']
+    ]
+  },
+
+  help: {
+    text:
+      '♤ SUPREME HELP CENTRE ♤\n━━━━━━━━━━━━━━━━━━\n\n' +
+      '/start — Open main menu\n' +
+      '/menu — Open main menu\n' +
+      '/help — Show help\n' +
+      '/register — Create account\n' +
+      '/me — Account details\n' +
+      '/pair — Link WhatsApp\n' +
+      '/connect — Reconnect\n' +
+      '/status — Connection status\n' +
+      '/disconnect — Stop connection',
+    buttons: [
+      ['menu_account', 'ACCOUNT'],
+      ['menu_whatsapp', 'WHATSAPP']
+    ]
+  }
+};
+
+function menuKeyboard(page) {
+  const selected = MENU_PAGES[page];
+  const rows = [];
+
+  for (let i = 0; i < selected.buttons.length; i += 2) {
+    rows.push(
+      selected.buttons.slice(i, i + 2).map(([action, label]) => ({
+        text: label,
+        callback_data: action
+      }))
+    );
+  }
+
+  if (page !== 'home') {
+    rows.push([{ text: '♤ BACK TO MAIN MENU', callback_data: 'menu_home' }]);
+  }
+
+  if (page !== 'help') {
+    rows.push([{ text: 'HELP & COMMANDS', callback_data: 'menu_help' }]);
+  }
+
+  return rows;
+}
+
+async function showMenu(ctx, page = 'home', edit = false) {
+  const selected = MENU_PAGES[page];
+  if (!selected) return;
+
+  const options = {
+    reply_markup: { inline_keyboard: menuKeyboard(page) }
+  };
+
+  if (edit && ctx.callbackQuery) {
+    try {
+      await ctx.editMessageText(selected.text, options);
+    } catch (err) {
+      if (!String(err?.description || err?.message).includes('message is not modified')) {
+        throw err;
+      }
+    }
+  } else {
+    await ctx.reply(selected.text, options);
+  }
+}
+
+bot.start(ctx => showMenu(ctx));
+bot.command('menu', ctx => showMenu(ctx));
+bot.command('help', ctx => showMenu(ctx, 'help'));
+
+bot.action('menu_home', async ctx => {
+  await ctx.answerCbQuery();
+  await showMenu(ctx, 'home', true);
 });
+
+for (const page of ['general', 'ai', 'media', 'search', 'group', 'games', 'owner', 'account', 'whatsapp', 'help']) {
+  bot.action('menu_' + page, async ctx => {
+    await ctx.answerCbQuery();
+    await showMenu(ctx, page, true);
+  });
+}
+
+const MENU_COMMANDS = {
+  menu_register: '/register',
+  menu_me: '/me',
+  menu_pair: '/pair',
+  menu_status: '/status',
+  menu_connect: '/connect',
+  menu_disconnect: '/disconnect'
+};
+
+for (const [action, command] of Object.entries(MENU_COMMANDS)) {
+  bot.action(action, async ctx => {
+    await ctx.answerCbQuery();
+    await ctx.reply(
+      command === '/pair'
+        ? 'To link WhatsApp, send:\n/pair 234XXXXXXXXX\n\nUse your country code and digits only.'
+        : 'Send ' + command + ' in this private chat to continue.'
+    );
+  });
+}
 
 bot.command('register', async ctx => {
   try {
@@ -431,16 +683,6 @@ bot.command('disconnect', async ctx => {
   );
 });
 
-bot.command('help', ctx => ctx.reply(
-  'SUPREME MD CLOUD\n\n' +
-  '/register - Create your account\n' +
-  '/me - View account details\n' +
-  '/pair 234XXXXXXXXX - Request a pairing code\n' +
-  '/connect - Reconnect your saved session\n' +
-  '/status - Check connection status\n' +
-  '/disconnect - Stop your cloud connection'
-));
-
 bot.catch(err => {
   console.error('[TELEGRAM] A command failed:', err?.message || err);
 });
@@ -449,14 +691,23 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`SUPREME MD CLOUD listening on port ${PORT}`);
 });
 
-try {
-  await bot.launch();
+bot.launch({}, () => {
   console.log('Telegram registration and pairing bot is running.');
-} catch {
-  console.error('Telegram startup failed. Check the token and network.');
+}).catch(err => {
+  const safeMessage = String(
+    err?.response?.description || err?.message || 'Unknown startup error'
+  ).replace(/\b\d{6,}:[A-Za-z0-9_-]+\b/g, '[REDACTED]');
+
+  console.error('[TELEGRAM STARTUP ERROR]', {
+    name: err?.name || 'Error',
+    message: safeMessage,
+    code: err?.code || null,
+    status: err?.response?.error_code || null
+  });
+
   server.close();
   process.exit(1);
-}
+});
 
 // Restore only sessions whose own saved credentials indicate registration.
 for (const id of Object.keys(users)) {
