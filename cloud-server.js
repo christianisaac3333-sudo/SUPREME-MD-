@@ -92,20 +92,53 @@ const app = express();
 app.disable('x-powered-by');
 
 app.get('/', (_req, res) => {
-  res.type('html').send(`
-    <!doctype html>
-    <html lang="en">
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      <title>SUPREME MD CLOUD</title>
-      <body style="background:#0b0b0f;color:#eee;font-family:Arial;padding:32px">
-        <h1>👑 SUPREME MD CLOUD</h1>
-        <p>Cloud service is running.</p>
-        <p><a href="/health" style="color:#b9a7ff">Service health</a></p>
-        <p>Telegram: @Supremecy_bot</p>
-      </body>
-    </html>
-  `);
+  res.set('Cache-Control', 'no-store');
+  res.type('html').send(`<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090a0d">
+<meta name="description" content="SUPREME MD CLOUD control centre and service status.">
+<title>SUPREME MD CLOUD — Control Centre</title>
+<style>
+:root{color-scheme:dark;--bg:#090a0d;--panel:#121419;--panel2:#171a20;--line:#292d35;--gold:#d6b36b;--muted:#9299a5;--white:#f3f2ed;--green:#72d6a0;--red:#ff8585}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -10%,#42351d55,transparent 38%),var(--bg);color:var(--white);font:15px/1.6 Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+a{color:inherit;text-decoration:none}.wrap{width:min(1120px,calc(100% - 36px));margin:auto}
+header{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.13em}.mark{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--gold);color:var(--gold);border-radius:12px;font-size:21px}.brand small{display:block;color:var(--muted);font-size:9px;letter-spacing:.2em;font-weight:600}
+.nav{display:flex;gap:20px;color:#c3c6cc;font-size:12px}.nav a:hover{color:var(--gold)}
+.hero{padding:62px 0 34px;display:grid;grid-template-columns:1.3fr .7fr;gap:28px;align-items:center}.eyebrow{color:var(--gold);font-size:10px;letter-spacing:.22em;font-weight:800}.hero h1{font-size:clamp(36px,6vw,66px);line-height:1.02;letter-spacing:-.04em;margin:14px 0}.hero h1 em{font-style:normal;color:var(--gold)}.lead{color:#aeb3bd;max-width:620px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:25px}.btn{border:1px solid var(--line);border-radius:10px;padding:11px 16px;font-weight:700;font-size:12px;letter-spacing:.04em}.btn.primary{background:var(--gold);color:#17130c;border-color:var(--gold)}.btn:hover{transform:translateY(-1px)}
+.statusbox{background:linear-gradient(145deg,#1a1c21,#101216);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 18px 60px #0005}.statushead{display:flex;justify-content:space-between;align-items:center;font-weight:700}.pill{border-radius:99px;background:#21372b;color:var(--green);padding:4px 9px;font-size:10px}.pulse{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:7px;box-shadow:0 0 14px var(--green)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0 42px}.metric,.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px}.metric span{display:block;color:var(--muted);font-size:10px;letter-spacing:.12em}.metric strong{display:block;font-size:27px;margin-top:6px}.metric small{color:var(--muted)}
+.sectionhead{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:16px}.sectionhead h2{margin:0;font-size:24px;letter-spacing:-.03em}.sectionhead p{margin:0;color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.panel h3{margin:0 0 8px;font-size:15px}.panel p{margin:0;color:var(--muted);font-size:13px}.command-tools{display:flex;gap:8px;margin:12px 0}.command-tools input{width:100%;background:#0b0d11;border:1px solid var(--line);border-radius:9px;padding:11px;color:var(--white);outline:none}.command-tools input:focus{border-color:var(--gold)}
+.commands{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.category{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px}.category h4{margin:0 0 7px;color:var(--gold);font-size:11px;letter-spacing:.12em}.category pre{white-space:pre-wrap;overflow-wrap:anywhere;color:#c8cbd1;font:12px/1.7 ui-monospace,SFMono-Regular,monospace;margin:0}
+.note{border-left:2px solid var(--gold);padding:10px 13px;color:#b8bdc6;background:#17150f;border-radius:0 8px 8px 0;font-size:12px;margin-top:14px}
+footer{border-top:1px solid var(--line);margin-top:48px;padding:24px 0;color:var(--muted);font-size:11px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(max-width:760px){.hero{grid-template-columns:1fr;padding-top:40px}.nav{gap:10px;font-size:10px}.metrics{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.commands{grid-template-columns:1fr}.statusbox{max-width:none}}@media(max-width:420px){.nav a:nth-child(2){display:none}.metrics{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap" style="display:flex;align-items:center;justify-content:space-between;width:100%"><a class="brand" href="/"><span class="mark">♤</span><span>SUPREME MD<small>CLOUD CONTROL CENTRE</small></span></a><nav class="nav"><a href="#status">STATUS</a><a href="#commands">COMMANDS</a><a href="#connect">CONNECT</a></nav></div></header>
+<main class="wrap">
+<section class="hero">
+<div><div class="eyebrow">CHRIS REMAINS SUPREME · CLOUD PLATFORM</div><h1>ONE CLOUD.<br><em>MORE CONTROL.</em></h1><p class="lead">The SUPREME MD CLOUD service hub. Check the live service, explore command categories, and connect through the official Telegram control bot.</p><div class="actions"><a class="btn primary" href="https://t.me/Supremecy_bot" target="_blank" rel="noopener">OPEN TELEGRAM CONTROL ↗</a><a class="btn" href="https://supreme-md-v2.onrender.com" target="_blank" rel="noopener">SUPREME MD V2 WEBSITE ↗</a><a class="btn" href="/health">VIEW HEALTH JSON</a></div></div>
+<aside class="statusbox" id="status"><div class="statushead"><span>LIVE SERVICE STATUS</span><span class="pill" id="statusPill">CHECKING</span></div><p style="color:var(--muted);font-size:12px;margin:13px 0 8px"><span class="pulse"></span><span id="statusText">Checking cloud response…</span></p><div style="border-top:1px solid var(--line);padding-top:13px;margin-top:13px;display:flex;justify-content:space-between;color:var(--muted);font-size:11px"><span>Last checked</span><strong id="checkedAt" style="color:var(--white)">—</strong></div><button class="btn" id="refresh" style="margin-top:15px;background:transparent;color:var(--white);cursor:pointer">↻ REFRESH STATUS</button></aside>
+</section>
+<section class="metrics" aria-label="Service metrics"><div class="metric"><span>REGISTERED ACCOUNTS</span><strong id="accounts">—</strong><small>Cloud account count</small></div><div class="metric"><span>ACTIVE WHATSAPP SESSIONS</span><strong id="sessions">—</strong><small id="capacity">Session capacity</small></div><div class="metric"><span>SERVER UPTIME</span><strong id="uptime">—</strong><small>Current process</small></div></section>
+<section id="commands"><div class="sectionhead"><h2>Command directory</h2><p>Browse the controls available in Telegram.</p></div><div class="command-tools"><input id="search" type="search" placeholder="Search a command or category…" aria-label="Search commands"></div><div class="commands" id="commandList"><div class="panel">Loading command directory…</div></div></section>
+<section class="grid" id="connect" style="margin-top:24px"><article class="panel"><h3>01 / Connect with Telegram</h3><p>Open the bot, register your Telegram account, then request a WhatsApp pairing code from the private chat.</p><div class="note">Telegram flow: /start → /register → /pair followed by your number with country code. Keep your pairing code private.</div><a class="btn primary" href="https://t.me/Supremecy_bot" target="_blank" rel="noopener" style="display:inline-block;margin-top:14px">OPEN @Supremecy_bot ↗</a></article><article class="panel"><h3>02 / Session safety</h3><p>Each registered account has a separate WhatsApp auth folder. Only connect accounts you own or are authorised to manage. Never share QR codes or pairing codes.</p><div class="note">The dashboard displays aggregate service counts only. It never displays phone numbers, Telegram IDs, QR codes, pairing codes, or saved credentials.</div></article></section>
+</main>
+<footer class="wrap"><span>♤ POWERED BY SUPREME DEV</span><span>SUPREME MD CLOUD · <span id="year"></span></span><span>CHRIS REMAINS SUPREME</span></footer>
+<script>
+const $=id=>document.getElementById(id);
+function duration(s){s=Math.max(0,Math.floor(s||0));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return [d?d+'d':'',h?h+'h':'',m?m+'m':'',Math.floor(s%60)+'s'].filter(Boolean).join(' ')}
+async function refresh(){try{const r=await fetch('/api/overview',{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const d=await r.json();$('statusPill').textContent='OPERATIONAL';$('statusText').textContent='Cloud API is responding';$('accounts').textContent=d.registeredAccounts;$('sessions').textContent=d.activeSessions;$('capacity').textContent='Maximum '+d.sessionCapacity+' sessions';$('uptime').textContent=duration(d.uptimeSeconds);$('checkedAt').textContent=new Date().toLocaleTimeString();}catch(e){$('statusPill').textContent='CHECK FAILED';$('statusText').textContent='Could not read service status';$('checkedAt').textContent=new Date().toLocaleTimeString();}}
+function renderCommands(data){const root=$('commandList');root.innerHTML='';const q=$('search').value.trim().toLowerCase();let count=0;for(const item of data.categories||[]){if(q&&!((item.title+' '+item.commands).toLowerCase().includes(q)))continue;count++;const card=document.createElement('article');card.className='category';const title=document.createElement('h4');title.textContent=item.title;const pre=document.createElement('pre');pre.textContent=item.commands;card.append(title,pre);root.append(card)}if(!count){const empty=document.createElement('div');empty.className='panel';empty.textContent='No matching command category.';root.append(empty)}}
+let commandData={categories:[]};fetch('/api/commands',{cache:'no-store'}).then(r=>r.json()).then(d=>{commandData=d;renderCommands(d)}).catch(()=>{$('commandList').textContent='Command directory is temporarily unavailable.'});$('search').addEventListener('input',()=>renderCommands(commandData));$('refresh').addEventListener('click',refresh);$('year').textContent=new Date().getFullYear();refresh();setInterval(refresh,30000);
+</script>
+</body></html>`);
 });
 
 app.get('/health', (_req, res) => {
@@ -447,6 +480,33 @@ const MENU_PAGES = {
     ]
   }
 };
+
+app.get('/api/overview', (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({
+    service: 'SUPREME MD CLOUD',
+    status: 'ok',
+    registeredAccounts: Object.keys(users).length,
+    activeSessions: sessions.size,
+    sessionCapacity: MAX_ACTIVE_SESSIONS,
+    uptimeSeconds: Math.floor(process.uptime()),
+    telegramConfigured: Boolean(TOKEN),
+    telegramPollingEnabled: process.env.TELEGRAM_POLLING_ENABLED !== 'false'
+  });
+});
+
+app.get('/api/commands', (_req, res) => {
+  res.set('Cache-Control', 'public, max-age=300');
+  res.json({
+    service: 'SUPREME MD CLOUD',
+    prefix: WA_PREFIX,
+    categories: Object.entries(MENU_PAGES).map(([key, page]) => ({
+      key,
+      title: key.replace(/^[a-z]/, value => value.toUpperCase()),
+      commands: page.text
+    }))
+  });
+});
 
 function menuKeyboard(page) {
   const selected = MENU_PAGES[page];
