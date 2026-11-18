@@ -145,6 +145,7 @@ app.get('/health', (_req, res) => {
   res.json({ service: 'SUPREME MD CLOUD', status: 'ok' });
 });
 
+let telegramPollingStatus = process.env.TELEGRAM_POLLING_ENABLED === 'false' ? 'disabled' : 'starting';
 const bot = new Telegraf(TOKEN);
 const logger = pino({ level: 'silent' });
 const sessions = new Map();
@@ -491,7 +492,8 @@ app.get('/api/overview', (_req, res) => {
     sessionCapacity: MAX_ACTIVE_SESSIONS,
     uptimeSeconds: Math.floor(process.uptime()),
     telegramConfigured: Boolean(TOKEN),
-    telegramPollingEnabled: process.env.TELEGRAM_POLLING_ENABLED !== 'false'
+    telegramPollingEnabled: process.env.TELEGRAM_POLLING_ENABLED !== 'false',
+    telegramStatus: telegramPollingStatus
   });
 });
 
@@ -753,8 +755,10 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 
 if (process.env.TELEGRAM_POLLING_ENABLED !== 'false') {
   bot.launch({}, () => {
+    telegramPollingStatus = 'running';
     console.log('Telegram registration and pairing bot is running.');
   }).catch(err => {
+    telegramPollingStatus = 'error';
     const safeMessage = String(
       err?.response?.description || err?.message || 'Unknown startup error'
     ).replace(/\b\d{6,}:[A-Za-z0-9_-]+\b/g, '[REDACTED]');
@@ -765,11 +769,10 @@ if (process.env.TELEGRAM_POLLING_ENABLED !== 'false') {
       code: err?.code || null,
       status: err?.response?.error_code || null
     });
-
-    server.close();
-    process.exit(1);
+    console.error('HTTP dashboard remains online; resolve the Telegram polling conflict separately.');
   });
 } else {
+  telegramPollingStatus = 'disabled';
   console.log('Telegram polling disabled on SUPREME MD CLOUD; V2 API owns this bot token.');
 }
 
