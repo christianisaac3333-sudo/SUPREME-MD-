@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node cloud-server.js",
-    "check": "node --check cloud-server.js",
+    "check": "node --check cloud-server.js && node --check whatsapp-command-engine.js",
     "cloud": "node cloud-server.js"
   },
   "dependencies": {
