@@ -691,23 +691,27 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`SUPREME MD CLOUD listening on port ${PORT}`);
 });
 
-bot.launch({}, () => {
-  console.log('Telegram registration and pairing bot is running.');
-}).catch(err => {
-  const safeMessage = String(
-    err?.response?.description || err?.message || 'Unknown startup error'
-  ).replace(/\b\d{6,}:[A-Za-z0-9_-]+\b/g, '[REDACTED]');
+if (process.env.TELEGRAM_POLLING_ENABLED !== 'false') {
+  bot.launch({}, () => {
+    console.log('Telegram registration and pairing bot is running.');
+  }).catch(err => {
+    const safeMessage = String(
+      err?.response?.description || err?.message || 'Unknown startup error'
+    ).replace(/\b\d{6,}:[A-Za-z0-9_-]+\b/g, '[REDACTED]');
 
-  console.error('[TELEGRAM STARTUP ERROR]', {
-    name: err?.name || 'Error',
-    message: safeMessage,
-    code: err?.code || null,
-    status: err?.response?.error_code || null
+    console.error('[TELEGRAM STARTUP ERROR]', {
+      name: err?.name || 'Error',
+      message: safeMessage,
+      code: err?.code || null,
+      status: err?.response?.error_code || null
+    });
+
+    server.close();
+    process.exit(1);
   });
-
-  server.close();
-  process.exit(1);
-});
+} else {
+  console.log('Telegram polling disabled on SUPREME MD CLOUD; V2 API owns this bot token.');
+}
 
 // Restore only sessions whose own saved credentials indicate registration.
 for (const id of Object.keys(users)) {
