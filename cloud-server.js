@@ -11,6 +11,7 @@ import {
 import { makeWASocket, Browsers, DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import { Telegraf } from 'telegraf';
+import { attachWhatsAppCommandEngine, activeWhatsAppCommandDirectory } from './whatsapp-command-engine.js';
 
 const PORT = Number(process.env.PORT || 3000);
 const DATA_DIR = path.resolve(process.env.DATA_DIR || './data');
@@ -190,6 +191,7 @@ async function startSession(id, phoneNumber = null) {
   };
 
   sessions.set(id, entry);
+  attachWhatsAppCommandEngine(sock, { prefix: WA_PREFIX, startedAt: Date.now() });
   await setWhatsAppStatus(id, entry.status);
 
   sock.ev.on('creds.update', saveCreds);
@@ -502,11 +504,7 @@ app.get('/api/commands', (_req, res) => {
   res.json({
     service: 'SUPREME MD CLOUD',
     prefix: WA_PREFIX,
-    categories: Object.entries(MENU_PAGES).map(([key, page]) => ({
-      key,
-      title: key.replace(/^[a-z]/, value => value.toUpperCase()),
-      commands: page.text
-    }))
+    categories: activeWhatsAppCommandDirectory(WA_PREFIX)
   });
 });
 
