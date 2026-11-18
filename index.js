@@ -337,7 +337,7 @@ async function processCommand(m) {
   const target = getTarget(m);
 
   try {
-    if (['menu', 'help'].includes(command)) return reply(jid, menuText(), m);
+    if (['menu', 'help', 'commands'].includes(command)) return reply(jid, menuText(), m);
     if (['alive', 'ping'].includes(command)) return reply(jid, `👑 ${BOT_NAME} is online.\n🏓 Pong!`, m);
     if (command === 'uptime') {
       const s = Math.floor((Date.now() - startedAt) / 1000);
