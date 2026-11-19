@@ -107,7 +107,7 @@ export function attachWhatsAppCommandEngine(sock, { prefix = '.', startedAt = Da
         const jid = message.key?.remoteJid;
         if (!jid) continue;
         const text = getMessageText(message).trim();
-        if (!text.startsWith(prefix)) continue;
+        // Non-command chats are handled by the lightweight conversational fallback below.
 
         const parts = text.slice(prefix.length).trim().split(/\s+/);
         const command = (parts.shift() || '').toLowerCase();
@@ -235,6 +235,26 @@ export function attachWhatsAppCommandEngine(sock, { prefix = '.', startedAt = Da
           const action = command === 'kick' ? 'remove' : command;
           await sock.groupParticipantsUpdate(jid, [target], action);
           await reply('✅ ' + command + ' completed.');
+          continue;
+        }
+        if (command === 'status') {
+          await reply('♤ SUPREME MD CLOUD STATUS ♤\\nWhatsApp: ' + (sock.user ? 'Connected' : 'Connecting') + '\\nChat: ' + (isGroup ? 'Group' : 'Private'));
+          continue;
+        }
+        if (command === 'sessions' || command === 'cloudstatus') {
+          await reply('♤ CLOUD CONTROL ♤\\nThis WhatsApp session is connected to SUPREME MD CLOUD. For account and session management, use the authorised Telegram or website control panel.');
+          continue;
+        }
+        // Friendly lightweight conversational replies when a message is not a command.
+        if (!text.startsWith(prefix)) {
+          const lower = text.toLowerCase();
+          if (/^(hi|hello|hey|good morning|good afternoon|good evening)\\b/.test(lower)) {
+            await reply('Hello! ♤ SUPREME MD is here. Type ' + prefix + 'menu to see available commands.');
+          } else if (/\\b(thank you|thanks)\\b/.test(lower)) {
+            await reply('You’re welcome! ♤');
+          } else if (lower.includes('who are you') || lower.includes('what is supreme md')) {
+            await reply('I’m SUPREME MD CLOUD — a WhatsApp command bot. Type ' + prefix + 'menu to explore.');
+          }
           continue;
         }
         await reply('Unknown or inactive command. Type ' + prefix + 'menu to see the active commands.');
